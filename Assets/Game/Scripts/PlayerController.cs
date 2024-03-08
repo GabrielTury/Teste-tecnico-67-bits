@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody),(typeof(Collider)))]
+[RequireComponent(typeof(Rigidbody), (typeof(Collider)))]
 public class PlayerController : MonoBehaviour
 {
     #region Components
@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
 
     private Animator anim;
 
+    [SerializeField]
+    private Transform stackPoint;
     #endregion
 
     #region Inputs
@@ -73,10 +75,21 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {  
+        //Troca o estado do Npc e ativa a animação de soco (Tentar otimizar)
         if(other.CompareTag("NPC"))
-        {            
-            anim.SetTrigger("punch");
-            other.SendMessage("Punched", SendMessageOptions.DontRequireReceiver);
+        {                      
+            NpcController npcScript = other.GetComponent<NpcController>();
+            if(npcScript != null)
+            {
+                if (npcScript.currentState != NpcController.NpcState.Ragdoll)
+                {
+                    anim.SetTrigger("punch");
+
+                    other.SendMessage("Punched",stackPoint, SendMessageOptions.DontRequireReceiver);
+                }
+            }
+
+            
         }
     }
 }

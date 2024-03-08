@@ -1,27 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class NpcController : MonoBehaviour
 {
-    private enum NpcState
+    public enum NpcState 
     {
         Idle,
         Walking,
         Ragdoll,
-        Drop
+        Drop,
+        Stacked
     }
+    public NpcState currentState { get; private set; } = NpcState.Idle;
 
-    private NpcState currentState = NpcState.Idle;
     #region Components
     private Rigidbody[] ragdollRbs;
+    private Rigidbody mainRb;
     private Animator anim;
+    private Collider col;
     #endregion
+
+    private Transform stackPosition;
 
     private void Awake()
     {
         ragdollRbs = GetComponentsInChildren<Rigidbody>();
         anim = GetComponent<Animator>();
+        col = GetComponent<Collider>();
+        mainRb = GetComponent<Rigidbody>();
     }
     // Start is called before the first frame update
     void Start()
@@ -60,17 +68,46 @@ public class NpcController : MonoBehaviour
                 currentState = NpcState.Ragdoll;
                 anim.enabled = false;
                 EnableRagdoll();
+                ChangeState(NpcState.Stacked);
+                break;
+            case NpcState.Stacked:
+                currentState = NpcState.Stacked;
+                anim.enabled = false;
+                StartCoroutine(Stack());
+
                 break;
 
 
         }
     }
-
     private void EnableRagdoll()
     {
         foreach(Rigidbody rb in ragdollRbs)
-        {
+        {            
             rb.isKinematic = false;
+        }
+        col.enabled = false; // desabilita o mais collider
+    }
+
+    private IEnumerator Stack()
+    {
+        yield return new WaitForSeconds(3f);
+
+
+        foreach (Rigidbody rb in ragdollRbs)
+        {
+            rb.velocity = Vector3.zero;
+            rb.useGravity = false;
+        }
+        
+        DisableRagdoll();
+
+        while (currentState == NpcState.Stacked)
+        {
+            MoveRagdoll();
+            //transform.position = stackPosition.position;
+            //Debug.Log(stackPosition);
+            yield return new WaitForEndOfFrame();
         }
     }
 
@@ -82,8 +119,15 @@ public class NpcController : MonoBehaviour
         }
     }
 
-    private void Punched()
+    private void Punched(Transform stackPoint)
     {
+        stackPosition = stackPoint;
         ChangeState(NpcState.Ragdoll);
+    }
+
+    private void MoveRagdoll()
+    {
+        ragdollRbs[1].position = stackPosition.position;
+        //ragdollRbs[1].MovePosition(stackPosition.position);
     }
 }
