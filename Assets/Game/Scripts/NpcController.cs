@@ -121,13 +121,24 @@ public class NpcController : MonoBehaviour
 
     private void Punched(Transform stackPoint)
     {
-        stackPosition = stackPoint;
-        ChangeState(NpcState.Ragdoll);
+        if(stackPoint != null)
+        {
+            stackPosition = stackPoint;
+            ChangeState(NpcState.Ragdoll);
+
+
+
+        }
+        else
+        {
+            EnableRagdoll(); // temporario
+        }
+
     }
 
     private void MoveRagdoll()
     {
         ragdollRbs[1].position = stackPosition.position;
-        //ragdollRbs[1].MovePosition(stackPosition.position);
+        
     }
 }

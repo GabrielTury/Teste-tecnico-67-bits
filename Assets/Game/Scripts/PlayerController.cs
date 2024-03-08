@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody), (typeof(Collider)))]
+[RequireComponent(typeof(Rigidbody), (typeof(Collider)), (typeof(StackManager)))]
 public class PlayerController : MonoBehaviour
 {
     #region Components
@@ -13,9 +13,13 @@ public class PlayerController : MonoBehaviour
 
     private Animator anim;
 
-    [SerializeField]
-    private Transform stackPoint;
     #endregion
+
+
+
+    private StackManager stackManager;
+
+    private int level;
 
     #region Inputs
     private Inputs inputs;
@@ -42,10 +46,13 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        stackManager = GetComponent<StackManager>();
+
         inputs.MainMap.Move.performed += Move_performed;
         inputs.MainMap.Move.canceled += Move_canceled;
     }
 
+    #region Input Delegates
     private void Move_canceled(InputAction.CallbackContext obj)
     {
         moveDirection = Vector3.zero;
@@ -57,7 +64,7 @@ public class PlayerController : MonoBehaviour
 
         moveDirection = new Vector3(joystickDirection.x, 0, joystickDirection.y);
     }
-
+    #endregion
 
     // Update is called once per frame
     void Update()
@@ -73,6 +80,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void LevelUp()
+    {
+        level++;
+        stackManager.IncreaseStackLimit(3);
+        //Change Color
+    }
+
+
+
+    public void DropStack()
+    {
+        
+
+    }
+
+
     private void OnTriggerEnter(Collider other)
     {  
         //Troca o estado do Npc e ativa a animação de soco (Tentar otimizar)
@@ -85,7 +108,9 @@ public class PlayerController : MonoBehaviour
                 {
                     anim.SetTrigger("punch");
 
-                    other.SendMessage("Punched",stackPoint, SendMessageOptions.DontRequireReceiver);
+                    other.SendMessage("Punched",stackManager.GetNextStackPoint(), SendMessageOptions.DontRequireReceiver);
+
+
                 }
             }
 

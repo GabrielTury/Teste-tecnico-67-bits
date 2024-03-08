@@ -6,16 +6,22 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public abstract class InteractablePad : MonoBehaviour
 {
+    private float timeCounter;
+
+    [SerializeField]
+    private float maxTimer;
 
 
-
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        
+        if (other.CompareTag("Player"))
+        {
+            StackManager stack = other.gameObject.GetComponent<StackManager>();
+            
+            if(timeCounter >= maxTimer)
+            {
+                //stack.stackedNpcs[]
+            }
+        }
     }
 }
