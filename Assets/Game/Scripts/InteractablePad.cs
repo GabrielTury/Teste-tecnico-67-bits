@@ -20,8 +20,10 @@ public abstract class InteractablePad : MonoBehaviour
             
             if(timeCounter >= maxTimer)
             {
-                //stack.stackedNpcs[]
+
+                timeCounter = 0;
             }
+            timeCounter += Time.deltaTime;
         }
     }
 }
