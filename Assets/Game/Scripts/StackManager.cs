@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class StackManager : MonoBehaviour
 {
-    public GameObject[] stackedNpcs;
+    public List<GameObject> stackedNpcs;
 
     private Transform[] stackPoints;
 
@@ -18,17 +18,22 @@ public class StackManager : MonoBehaviour
     [SerializeField]
     private GameObject stackPointTemplate;
 
+    private PlayerController playerController;
+
 
     private void Awake()
     {
         stackPoints = new Transform[maxStack];
+        stackedNpcs = new List<GameObject>();
     }
     private void Start()
     {
+        playerController = stackPointTemplate.GetComponentInParent<PlayerController>();
+
         int i = 0;
         foreach (Transform t in stackPoints)
         {
-            GameObject go = Instantiate(stackPointTemplate, gameObject.transform);
+            GameObject go = Instantiate(stackPointTemplate);
 
 
             stackPoints[i] = go.transform;
@@ -36,6 +41,25 @@ public class StackManager : MonoBehaviour
 
             i++;
         }
+    }
+
+    private void LateUpdate()
+    {
+        float i = 1;
+
+        foreach(Transform t in stackPoints) 
+        {
+            float speed = 2f- i/25f; //Tentar com Corotina
+            t.position = Vector3.MoveTowards(t.position, stackPointTemplate.transform.position + new Vector3(0, i - 1, 0), speed * Time.deltaTime);
+            Debug.Log("N - "+ i + ": " + speed);
+
+            i++;
+        }
+    }
+
+    public void AddNpcToStack(GameObject npc)
+    {
+        stackedNpcs.Add(npc);
     }
 
     public Transform GetNextStackPoint()
@@ -60,5 +84,24 @@ public class StackManager : MonoBehaviour
         {
             stackLimit = maxStack;
         }
+    }
+
+    public bool ReleaseStack(Vector3 releasePosition)
+    {
+        if(stackCount > 0)
+        {
+            //Debug.Log("Stack Count" + stackCount);
+            //Debug.Log("List: " + stackedNpcs.Count);
+            stackCount--;
+            NpcController npcScript = stackedNpcs[stackCount].GetComponent<NpcController>();
+
+            stackedNpcs.RemoveAt(stackCount);
+
+            
+
+            npcScript.SmoothMoveRagdoll(releasePosition);
+            return true;
+        }
+        return false;
     }
 }

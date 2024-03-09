@@ -11,17 +11,24 @@ public abstract class InteractablePad : MonoBehaviour
     [SerializeField]
     private float maxTimer;
 
+    protected abstract void PadAction(GameObject playerObj);
+
 
     private void OnTriggerStay(Collider other)
     {
+        /*Debug.Log("Trigger Stay");*/
         if (other.CompareTag("Player"))
         {
-            StackManager stack = other.gameObject.GetComponent<StackManager>();
-            
+
+            GameObject playerObj = other.gameObject;
+
             if(timeCounter >= maxTimer)
             {
 
+
                 timeCounter = 0;
+
+                PadAction(playerObj);
             }
             timeCounter += Time.deltaTime;
         }

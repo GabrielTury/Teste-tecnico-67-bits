@@ -27,7 +27,8 @@ public class PlayerController : MonoBehaviour
 
     #region Movement
     private Vector2 joystickDirection;
-    private Vector3 moveDirection;
+    public Vector3 moveDirection;
+
     [SerializeField]
     private float moveSpeed;
     [SerializeField]
@@ -65,11 +66,14 @@ public class PlayerController : MonoBehaviour
         moveDirection = new Vector3(joystickDirection.x, 0, joystickDirection.y);
     }
     #endregion
-
+    private void FixedUpdate()
+    {
+        rb.velocity = moveDirection * moveSpeed;
+    }
     // Update is called once per frame
     void Update()
     {
-        rb.velocity = moveDirection * moveSpeed;
+        
         anim.SetFloat("speed", rb.velocity.magnitude);
 
         if(moveDirection != Vector3.zero)
@@ -84,17 +88,23 @@ public class PlayerController : MonoBehaviour
     {
         level++;
         stackManager.IncreaseStackLimit(3);
+
+        Material mainMat = GetComponentInChildren<SkinnedMeshRenderer>().material;
         //Change Color
-    }
-
-
-
-    public void DropStack()
-    {
+        switch (level)
+        {
+            case 1:
+                mainMat.color = Color.blue;
+                break;
+            case 2:
+                mainMat.color = Color.red;
+                break;
+            case 3:
+                mainMat.color = Color.green;
+                break;
+        }
         
-
     }
-
 
     private void OnTriggerEnter(Collider other)
     {  
@@ -109,7 +119,7 @@ public class PlayerController : MonoBehaviour
                     anim.SetTrigger("punch");
 
                     other.SendMessage("Punched",stackManager.GetNextStackPoint(), SendMessageOptions.DontRequireReceiver);
-
+                    stackManager.AddNpcToStack(other.gameObject);
 
                 }
             }

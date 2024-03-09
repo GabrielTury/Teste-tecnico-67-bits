@@ -37,11 +37,6 @@ public class NpcController : MonoBehaviour
         DisableRagdoll();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     private void ChangeState(NpcState newState)
     {
@@ -61,6 +56,8 @@ public class NpcController : MonoBehaviour
 
             case NpcState.Drop:
                 currentState = NpcState.Drop;
+                EnableRagdoll();
+                StartCoroutine(Drop());
                 anim.enabled = false;
                 break;
 
@@ -104,9 +101,8 @@ public class NpcController : MonoBehaviour
 
         while (currentState == NpcState.Stacked)
         {
-            MoveRagdoll();
-            //transform.position = stackPosition.position;
-            //Debug.Log(stackPosition);
+            MoveRagdoll(stackPosition.position);
+
             yield return new WaitForEndOfFrame();
         }
     }
@@ -126,8 +122,6 @@ public class NpcController : MonoBehaviour
             stackPosition = stackPoint;
             ChangeState(NpcState.Ragdoll);
 
-
-
         }
         else
         {
@@ -136,9 +130,26 @@ public class NpcController : MonoBehaviour
 
     }
 
-    private void MoveRagdoll()
+    private void MoveRagdoll(Vector3 destination)
     {
-        ragdollRbs[1].position = stackPosition.position;
+        ragdollRbs[1].position = destination;
         
+    }
+
+    public void SmoothMoveRagdoll(Vector3 destination)
+    {
+        ChangeState(NpcState.Drop);
+
+        ragdollRbs[1].AddForce(Vector3.up * 3, ForceMode.Impulse);
+
+        ragdollRbs[1].MovePosition(destination);
+
+        
+    }
+
+    private IEnumerator Drop()
+    {
+        yield return new WaitForSeconds(2f);
+        Destroy(gameObject);
     }
 }
