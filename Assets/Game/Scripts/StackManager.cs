@@ -20,6 +20,9 @@ public class StackManager : MonoBehaviour
 
     private PlayerController playerController;
 
+    [SerializeField]
+    private float k;
+
 
     private void Awake()
     {
@@ -45,17 +48,25 @@ public class StackManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        float i = 1;
-
-        foreach(Transform t in stackPoints) 
+        int i = 0;
+        foreach (Transform t in stackPoints)
         {
-            float speed = 2f- i/25f; //Tentar com Corotina
-            t.position = Vector3.MoveTowards(t.position, stackPointTemplate.transform.position + new Vector3(0, i - 1, 0), speed * Time.deltaTime);
-            Debug.Log("N - "+ i + ": " + speed);
+            if(t == stackPoints[0])
+            {
+                t.position = stackPointTemplate.transform.position;
+            }
+            else
+            {
+                Vector3 velocity = -k * (t.position - stackPoints[i - 1].position);
+                velocity.y = 0;
 
+                t.position = t.position + velocity * Time.deltaTime;
+            }
             i++;
         }
     }
+
+
 
     public void AddNpcToStack(GameObject npc)
     {
