@@ -16,16 +16,16 @@ public class PlayerController : MonoBehaviour
     #endregion
 
 
-
     private StackManager stackManager;
 
+    #region Level Variables
     private int level;
-
+    #endregion
     #region Inputs
     private Inputs inputs;
     #endregion
 
-    #region Movement
+    #region Movement Variables
     private Vector2 joystickDirection;
     public Vector3 moveDirection;
 
@@ -54,11 +54,19 @@ public class PlayerController : MonoBehaviour
     }
 
     #region Input Delegates
+    /// <summary>
+    /// Chamado quando o joystick para de ser mexido
+    /// </summary>
+    /// <param name="obj"></param>
     private void Move_canceled(InputAction.CallbackContext obj)
     {
         moveDirection = Vector3.zero;
     }
 
+    /// <summary>
+    /// Chamado enquanto o joystick estiver sendo usado
+    /// </summary>
+    /// <param name="obj"></param>
     private void Move_performed(InputAction.CallbackContext obj)
     {
         joystickDirection = obj.ReadValue<Vector2>();
@@ -66,42 +74,55 @@ public class PlayerController : MonoBehaviour
         moveDirection = new Vector3(joystickDirection.x, 0, joystickDirection.y);
     }
     #endregion
+
+    #region Updates
     private void FixedUpdate()
     {
-        rb.velocity = moveDirection * moveSpeed;
+        rb.velocity = moveDirection * moveSpeed; //movimento simples
     }
     // Update is called once per frame
     void Update()
     {
         
-        anim.SetFloat("speed", rb.velocity.magnitude);
+        anim.SetFloat("speed", rb.velocity.magnitude); //atualiza o animator
 
         if(moveDirection != Vector3.zero)
         {          
             Quaternion rotation = Quaternion.LookRotation(moveDirection, Vector3.up);
 
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, rotationSpeed * Time.deltaTime); //faz virar na direção do movimento
         }
     }
-
+    #endregion
+    /// <summary>
+    /// Cuida da mudança de Cor quando sobe de Nível e chama o StackManager para aumenta o número de objetos permitidos
+    /// </summary>
     public void LevelUp()
     {
-        level++;
-        stackManager.IncreaseStackLimit(3);
-
-        Material mainMat = GetComponentInChildren<SkinnedMeshRenderer>().material;
-        //Change Color
-        switch (level)
+        if (level < 5)
         {
-            case 1:
-                mainMat.color = Color.blue;
-                break;
-            case 2:
-                mainMat.color = Color.red;
-                break;
-            case 3:
-                mainMat.color = Color.green;
-                break;
+
+            level++;
+            stackManager.IncreaseStackLimit(3);
+            UiManager.instance.AddLevelUI(1);
+
+            Material mainMat = GetComponentInChildren<SkinnedMeshRenderer>().material;
+            //Change Color
+            switch (level)
+            {
+                case 1:
+                    mainMat.color = Color.blue;
+                    break;
+                case 2:
+                    mainMat.color = Color.red;
+                    break;
+                case 3:
+                    mainMat.color = Color.cyan;
+                    break;
+                case 4:
+                    mainMat.color = Color.magenta;
+                    break;
+            }
         }
         
     }
@@ -116,10 +137,17 @@ public class PlayerController : MonoBehaviour
             {
                 if (npcScript.currentState != NpcController.NpcState.Ragdoll)
                 {
-                    anim.SetTrigger("punch");
+                    anim.SetTrigger("punch"); // ativa o animator
 
-                    other.SendMessage("Punched",stackManager.GetNextStackPoint(), SendMessageOptions.DontRequireReceiver);
-                    stackManager.AddNpcToStack(other.gameObject);
+                    if (stackManager.CheckIfAvailable())
+                    {
+                        
+                        stackManager.AddNpcToStack(other.gameObject);
+
+                    }
+
+                    npcScript.Punched(stackManager.GetNextStackPoint());
+                    //other.SendMessage("Punched",stackManager.GetNextStackPoint(), SendMessageOptions.DontRequireReceiver);
 
                 }
             }

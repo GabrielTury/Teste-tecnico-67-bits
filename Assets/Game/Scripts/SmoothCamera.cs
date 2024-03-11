@@ -13,7 +13,6 @@ public class SmoothCamera : MonoBehaviour
 
     #endregion
 
-    #region Unity callbacks
 
     private void Awake()
     {
@@ -26,5 +25,5 @@ public class SmoothCamera : MonoBehaviour
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref currentVelocity, smoothTime);
     }
 
-    #endregion
+
 }

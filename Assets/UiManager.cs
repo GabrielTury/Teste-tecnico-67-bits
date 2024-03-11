@@ -29,7 +29,10 @@ public class UiManager : MonoBehaviour
     {
         
     }
-
+    /// <summary>
+    /// Adiciona dinheiro e Atualiza a UI
+    /// </summary>
+    /// <param name="addValue"></param>
     public void AddMoneyUI(float addValue)
     {
         moneyF += addValue;
@@ -38,7 +41,10 @@ public class UiManager : MonoBehaviour
         //Update Value
         money.text = newValue;
     }
-
+    /// <summary>
+    /// Subtrai dinheiro e Atualiza a UI
+    /// </summary>
+    /// <param name="subtractValue"></param>
     public void SubtractMoneyUI(float subtractValue)
     {
         moneyF -= subtractValue;
@@ -47,12 +53,15 @@ public class UiManager : MonoBehaviour
         //Update Value
         money.text = newValue;
     }
-
+    /// <summary>
+    /// Atualiza a UI com o nível Atual
+    /// </summary>
+    /// <param name="addValue"></param>
     public void AddLevelUI(int addValue)
     {
         levelI += addValue;
         string newValue = levelI.ToString();
 
-        level.text = newValue;
+        level.text = "LV: " + newValue;
     }
 }

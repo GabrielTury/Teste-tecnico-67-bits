@@ -9,9 +9,9 @@ public abstract class InteractablePad : MonoBehaviour
     private float timeCounter;
 
     [SerializeField]
-    private float maxTimer;
+    private float maxTimer; //Tempo q o player tem q ficar em cima para interagir
 
-    protected abstract void PadAction(GameObject playerObj);
+    protected abstract void PadAction(GameObject playerObj); //função abstrata que vai conter o funcionamento das diferentes bases
 
 
     private void OnTriggerStay(Collider other)

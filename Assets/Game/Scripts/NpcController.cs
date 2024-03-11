@@ -5,15 +5,16 @@ using UnityEngine;
 
 public class NpcController : MonoBehaviour
 {
+    #region State Machine Enum
     public enum NpcState 
     {
         Idle,
-        Walking,
         Ragdoll,
         Drop,
         Stacked
     }
     public NpcState currentState { get; private set; } = NpcState.Idle;
+    #endregion
 
     #region Components
     private Rigidbody[] ragdollRbs;
@@ -21,6 +22,8 @@ public class NpcController : MonoBehaviour
     private Animator anim;
     private Collider col;
     #endregion
+
+    
 
     private Transform stackPosition;
 
@@ -37,7 +40,11 @@ public class NpcController : MonoBehaviour
         DisableRagdoll();
     }
 
-
+    #region State Machines
+    /// <summary>
+    /// Altera o Estado do NPC e executa o que necessita
+    /// </summary>
+    /// <param name="newState"></param>
     private void ChangeState(NpcState newState)
     {
         StopAllCoroutines();
@@ -46,11 +53,6 @@ public class NpcController : MonoBehaviour
         {
             case NpcState.Idle:
                 currentState = NpcState.Idle;
-                anim.enabled = true;
-                break;
-
-            case NpcState.Walking:
-                currentState = NpcState.Walking;
                 anim.enabled = true;
                 break;
 
@@ -77,6 +79,12 @@ public class NpcController : MonoBehaviour
 
         }
     }
+    #endregion
+
+    #region Ragdoll Change
+    /// <summary>
+    /// Habilita o ragdoll
+    /// </summary>
     private void EnableRagdoll()
     {
         foreach(Rigidbody rb in ragdollRbs)
@@ -85,7 +93,19 @@ public class NpcController : MonoBehaviour
         }
         col.enabled = false; // desabilita o mais collider
     }
+    /// <summary>
+    /// Desabilita o ragdoll
+    /// </summary>
+    private void DisableRagdoll()
+    {
+        foreach (Rigidbody rb in ragdollRbs)
+        {
+            rb.isKinematic = true;
+        }
+    }
+    #endregion
 
+    #region CoRoutines
     private IEnumerator Stack()
     {
         yield return new WaitForSeconds(3f);
@@ -102,20 +122,24 @@ public class NpcController : MonoBehaviour
         while (currentState == NpcState.Stacked)
         {
             MoveRagdoll(stackPosition.position);
+            ragdollRbs[1].rotation = stackPosition.rotation;
 
             yield return new WaitForEndOfFrame();
         }
     }
-
-    private void DisableRagdoll()
+    private IEnumerator Drop()
     {
-        foreach (Rigidbody rb in ragdollRbs)
-        {
-            rb.isKinematic = true;
-        }
+        yield return new WaitForSeconds(2f);
+        NpcSpawner.instance.RemoveNpc();
+        Destroy(gameObject);
     }
+    #endregion
 
-    private void Punched(Transform stackPoint)
+    /// <summary>
+    /// Chamado quando recebe um soco
+    /// </summary>
+    /// <param name="stackPoint"></param>
+    public void Punched(Transform stackPoint)
     {
         if(stackPoint != null)
         {
@@ -125,11 +149,12 @@ public class NpcController : MonoBehaviour
         }
         else
         {
-            EnableRagdoll(); // temporario
+            ChangeState(NpcState.Drop);
         }
 
     }
 
+    #region Move Functions
     private void MoveRagdoll(Vector3 destination)
     {
         ragdollRbs[1].position = destination;
@@ -146,10 +171,6 @@ public class NpcController : MonoBehaviour
 
         
     }
+    #endregion
 
-    private IEnumerator Drop()
-    {
-        yield return new WaitForSeconds(2f);
-        Destroy(gameObject);
-    }
 }
